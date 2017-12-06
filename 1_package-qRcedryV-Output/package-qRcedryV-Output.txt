@@ -1,0 +1,121 @@
+<div class="section section-hidden" data-id="qRcedryV" data-type="package" name="Output"><div class="paragraph body-paragraph locked collapsed" data-id="fuLwB9hN" name="Documentation"><div data-type="content" type="text/html" codemirror="true" contenteditable="false" class="section-documentation"><h2>Description</h2>Adds an output() function to easily print output into a body paragraph.</div></div><div class="paragraph data-paragraph collapsed" name="Properties" data-id="2Jdaxtda" style=""><pre data-type="content" type="application/json" class="section-properties" contenteditable="true">{
+	"version": "0.2.1",
+	"icon": "receipt",
+	"description": "Adds an output() function to easily print output into a body paragraph.",
+	"assets": [],
+	"dependencies": [],
+	"changelog":
+	{
+		"0.2.1": "'this' in output now correctly refers to the calling paragraph.",
+		"0.2": "Use paragraph utils and cleanup, added styling for data-output.",
+		"0.1": "Initial version."
+	}
+}</pre></div><div class="paragraph code-paragraph collapsed" data-id="U8eupwkv" draggable="false" style="" name="Output Code" run-on-load="true" last-execution-state="success"><pre data-type="content" type="text/javascript">const ParagraphUtils = require("#paragraph-utils");
+
+/******************************************************************************/
+
+const createParagraph = function(type) {
+	const newParagraph = document.createElement("div");
+	newParagraph.classList.add("paragraph");
+	newParagraph.classList.add(`${type}-paragraph`);
+	return newParagraph;
+};
+
+function createDataParagraph(content) {
+	const outputParagraph = ParagraphUtils.createDataParagraph(JSON.stringify(content, null, 2));
+	outputParagraph.setAttribute("name", "Output " + this.getAttribute("name"));
+	outputParagraph.classList.add("output");
+
+	const outputContent = outputParagraph.querySelector("[data-type='content']");
+	outputContent.classList.add("output");
+	outputContent.contentEditable = false;
+
+	this.parentElement.insertBefore(outputParagraph, this.nextElementSibling);
+}
+
+function createBodyParagraph(content) {
+	const outputParagraph = ParagraphUtils.createBodyParagraph();
+	outputParagraph.setAttribute("name", "Output " + this.getAttribute("name"));
+	outputParagraph.classList.add("output");
+
+	const outputContent = outputParagraph.querySelector("[data-type='content']");
+	outputContent.classList.add("output");
+	outputContent.contentEditable = false;
+	outputContent.appendChild(content);
+
+	this.parentElement.insertBefore(outputParagraph, this.nextElementSibling);
+}
+
+/******************************************************************************/
+
+function output(content) {
+	if (this.nextElementSibling &amp;&amp; this.nextElementSibling.querySelector(".output[data-type='content']")) {
+		this.nextElementSibling.remove();
+	}
+
+	if (content instanceof Element) {
+		createBodyParagraph.call(this, content);
+	} else if (typeof content === "string" || typeof content === "number") {
+		let el = document.createElement("div");
+		el.innerHTML = content;
+		createBodyParagraph.call(this, el);
+	} else { //We'll assume it's a Javascript object
+		createDataParagraph.call(this, content);
+	}
+}
+
+document.liveQuerySelectorAll("[data-type='content']").added((content) =&gt; {
+	content.liveAttribute("class").changed((value, oldValue) =&gt; {
+		if (content.classList.contains("output")) {
+			content.closest(".paragraph").classList.add("output");
+		} else {
+			content.closest(".paragraph").classList.remove("output");
+		}
+	});
+});
+
+/******************************************************************************/
+
+const vm = Codestrate.VirtualMachines.get("JavaScript");
+
+vm.addToGlobalContext({
+	output
+});</pre></div><div class="paragraph style-paragraph collapsed" data-id="ftrWXYaM" name="Output Style"><style data-type="content" type="text/css" codemirror="true" class="themable">html .data-paragraph.output:not(.collapsed):not([transient-focussed]) {
+	background: var(--color-primary-shade-1);
+	border-radius: 15px;
+}
+
+html .data-paragraph.output:not([transient-focussed]) .CodeMirror {
+	padding: 16px;
+}
+
+html .data-paragraph.output:not([transient-focussed]) .CodeMirror-activeline-background,
+html .data-paragraph.output:not([transient-focussed]) .CodeMirror-rulers,
+html .data-paragraph.output:not([transient-focussed]) .CodeMirror-gutters,
+html .data-paragraph.output:not([transient-focussed]) .CodeMirror-gutter-wrapper {
+	display: none;
+}
+
+html .data-paragraph.output:not(.collapsed):not([transient-focussed]) .paragraph-header {
+	display: none !important;
+}
+
+html .data-paragraph.output:not(.collapsed):not([transient-focussed]):before,
+html .data-paragraph.output:not(.collapsed):not([transient-focussed]):after {
+	display: block;
+	content: "";
+	height: 10px;
+	font-size: 16pt;
+	line-height: 30px;
+	background: var(--color-primary-shade-1);
+}
+
+html .data-paragraph.output:not(.collapsed):not([transient-focussed]):before {
+	border-top: 5px solid var(--color-primary-shade-3);
+	border-radius: 30px 30px 0 0;
+}
+
+html .data-paragraph.output:not(.collapsed):not([transient-focussed]):after {
+	border-bottom: 5px solid var(--color-primary-shade-3);
+	border-radius: 0 0 30px 30px;
+}</style></div></div>
